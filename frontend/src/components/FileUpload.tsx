@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, type ChangeEvent, } from "react";
 
 //Define types for component state
 
