@@ -1,11 +1,11 @@
-import { useState, type ChangeEvent, } from "react";
+import { useState, type ChangeEvent } from "react";
 
 //Define types for component state
 
 interface UploadState {
     selectedFile: File | null;
-    isUploading: boolean
-    message: string
+    isUploading: boolean;
+    message: string;
     messageType: 'success' | 'error' | '';
 }
 
@@ -29,7 +29,7 @@ const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
 const handleUpload = async (): Promise<void> => {
     if (!selectedFile) {
         setMessage('Please select a file first!');
-        setMessage('error');
+        setMessageType('error');
         return;
     }
 
@@ -77,7 +77,7 @@ try {
     const containerStyle: React.CSSProperties = {
         padding: '20px',
         maxWidth: '500px',
-        margin:'0 auto,'
+        margin:'0 auto'
     };
 
     const buttonStyle: React.CSSProperties = {
@@ -86,7 +86,7 @@ try {
         color: 'white',
         border: 'none',
         borderRadius: '5px',
-        cursor: isUploading || !selectedFile ? 'not allowed' : 'pointer',
+        cursor: isUploading || !selectedFile ? 'not-allowed' : 'pointer',
         marginTop: '10px',
     };
     const messageStyle: React.CSSProperties = {
