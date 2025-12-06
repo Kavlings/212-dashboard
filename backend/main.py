@@ -1,4 +1,4 @@
-import fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from typing import Any
@@ -23,3 +23,15 @@ async def upload_csv(file:UploadFile = File(...)) -> Any:
     # The endpoint that Fileupload will call
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
+
+    # Example placeholder: read contents or pass to csv_parser
+    content = await file.read()
+
+    #Todo - implement logic for csv parsing
+
+    return JSONResponse (
+        "filename" : file.filename,
+        "size_bytes": len(content),
+        "message" : "File received successfully(processing yet to be implemented lol)"
+
+    )
