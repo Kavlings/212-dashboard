@@ -29,9 +29,10 @@ async def upload_csv(file:UploadFile = File(...)) -> Any:
 
     #Todo - implement logic for csv parsing
 
-    return JSONResponse (
+    return JSONResponse ({
         "filename" : file.filename,
         "size_bytes": len(content),
         "message" : "File received successfully(processing yet to be implemented lol)"
+    }
 
     )
