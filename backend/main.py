@@ -1,3 +1,4 @@
+from backend.csv_parser import parse_trading212_csv
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -20,19 +21,17 @@ async def health_check() -> dict[str, str]:
 
 @app.post("/upload")
 async def upload_csv(file:UploadFile = File(...)) -> Any:
-    # The endpoint that Fileupload will call
+
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
 
     # Example placeholder: read contents or pass to csv_parser
     content = await file.read()
+    parsed = parse_trading212_csv(content)
 
-    #Todo - implement logic for csv parsing
+    return JSONResponse({
+    "filename": file.filename,
+    "size_bytes": len(content),
+    "parsed": parsed
+    })
 
-    return JSONResponse ({
-        "filename" : file.filename,
-        "size_bytes": len(content),
-        "message" : "File received successfully(processing yet to be implemented lol)"
-    }
-
-    )
