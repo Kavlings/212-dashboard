@@ -1,136 +1,122 @@
-import { useState, type ChangeEvent } from "react";
-
-//Define types for component state
-
-interface UploadState {
-    selectedFile: File | null;
-    isUploading: boolean;
-    message: string;
-    messageType: 'success' | 'error' | '';
-}
+import { useState, type ChangeEvent, type DragEvent } from "react";
 
 function FileUpload() {
-    //State with explicit types
-    const [selectedFile,setSelectedFile] = useState<File | null>(null);
-    const [isUploading, setIsUploading] = useState<boolean>(false);
-    const [message, setMessage] = useState<string>('');
-    const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | 'loading' | ''>('');
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
 
-
-//Event handler with proper typing 
-const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0]; //optional chaining - check on this later
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files?.[0];
     setSelectedFile(file || null);
-    setMessage(''); //clear previous message
+    setMessage('');
+    setMessageType('');
+  };
 
-};
+  const handleDragOver = (e: DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
 
-//Upload handler - async function 
-const handleUpload = async (): Promise<void> => {
+  const handleDragLeave = (): void => setIsDragOver(false);
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.name.endsWith('.csv')) {
+      setSelectedFile(file);
+      setMessage('');
+      setMessageType('');
+    } else {
+      setMessage('Please drop a CSV file.');
+      setMessageType('error');
+    }
+  };
+
+  const handleUpload = async (): Promise<void> => {
     if (!selectedFile) {
-        setMessage('Please select a file first!');
-        setMessageType('error');
-        return;
+      setMessage('Please select a file first.');
+      setMessageType('error');
+      return;
     }
 
-//Create FormData for file upload 
-const formData = new FormData();
-formData.append('file', selectedFile);
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    setIsUploading(true);
+    setMessage('Uploading...');
+    setMessageType('loading');
 
-setIsUploading(true);
-setMessage('Uploading...')
-setMessageType('');
-
-
-try {
-    //Send file to FastAPI backend
-    const response = await fetch ('http://localhost:8000/api/upload', {
+    try {
+      const response = await fetch('http://localhost:8000/upload', {
         method: 'POST',
         body: formData,
-    });
+      });
+      const data: { status?: string; message?: string } = await response.json();
 
-    //Type the response data
-    const data: {status?: string; message?: string} = await response.json();
-
-    if (response.ok) {
-        setMessage('File Uploaded Successfully!');
+      if (response.ok) {
+        setMessage('File uploaded successfully!');
         setMessageType('success');
-        setSelectedFile(null); //Clear selection
-    } else {
+        setSelectedFile(null);
+      } else {
         setMessage(`Error: ${data.message || 'Upload failed'}`);
         setMessageType('error');
-    }
+      }
     } catch (error) {
-        //TypeScript knows error might not have .message
-        const errorMessage = error instanceof Error
-        ? error.message
-        : 'An unknown error has occured';
-        setMessage(`Error: ${errorMessage}`);
-        setMessageType('error');
+      const msg = error instanceof Error ? error.message : 'An unknown error occurred';
+      setMessage(`Error: ${msg}`);
+      setMessageType('error');
     } finally {
-        setIsUploading(false);
+      setIsUploading(false);
     }
-    };
+  };
 
-    // Styles object with types
+  const messageIcon = { success: '✓', error: '✕', loading: '↑', '': '' }[messageType];
 
-    const containerStyle: React.CSSProperties = {
-        padding: '20px',
-        maxWidth: '500px',
-        margin:'0 auto'
-    };
+  return (
+    <div className="glass-card">
+      <p className="glass-card-title">Import Data</p>
 
-    const buttonStyle: React.CSSProperties = {
-        padding: '10px 20px',
-        backgroundColor: isUploading ? '#6c757d' : '#007bff',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: isUploading || !selectedFile ? 'not-allowed' : 'pointer',
-        marginTop: '10px',
-    };
-    const messageStyle: React.CSSProperties = {
-        marginTop: '10px',
-        padding: '10px',
-        backgroundColor: messageType ==='success' ? '#d4edda' : '#f8d7da',
-        color: messageType === 'success' ? '#155724' : '#721c24',
-        borderRadius: '5px',
-    };
+      <div
+        className={`dropzone${isDragOver ? ' drag-over' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleFileChange}
+          disabled={isUploading}
+        />
+        <div className="dropzone-icon">📊</div>
+        <p className="dropzone-label">
+          {selectedFile ? selectedFile.name : 'Drop your CSV here'}
+        </p>
+        <p className="dropzone-sublabel">
+          {selectedFile
+            ? `${(selectedFile.size / 1024).toFixed(1)} KB · Ready to upload`
+            : 'or click to browse · .csv files only'}
+        </p>
+      </div>
 
-    return (
-        <div style={containerStyle}>
-            <h2> Upload CSV File </h2>
-            {/* {file input with proper typing} */}
-            <input type="file"
-            accept=".csv"
-            onChange={handleFileChange}
-            disabled={isUploading}
-            style={{marginBottom:'10px', display:'block'}}
-             />
+      <button
+        className="upload-btn"
+        onClick={handleUpload}
+        disabled={isUploading || !selectedFile}
+      >
+        {isUploading ? 'Uploading...' : 'Upload CSV →'}
+      </button>
 
-             {/* {Conditional rendering} - Typescript knows selectedFile might be null */}
-             {
-                selectedFile && (
-                    <p style={{color:'#666' }}> Selected: {selectedFile.name}</p>
-                )}
-
-                {/* {Upload button} */}
-                <button
-                onClick={handleUpload}
-                disabled={isUploading || !selectedFile}
-                style={buttonStyle}
-                >
-                {isUploading ? 'Uploading...' : 'Upload'}
-                </button>
-
-                {/* {Success/Error Message} */}
-                {message && (
-                    <div style={messageStyle}>
-                        {message}
-                    </div>
-                )}
+      {message && (
+        <div className={`message-banner ${messageType}`}>
+          <span>{messageIcon}</span>
+          {message}
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default FileUpload;
