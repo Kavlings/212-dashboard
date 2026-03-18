@@ -1,4 +1,16 @@
 fastapi==0.104.1
+uvicorn
+python-multipart
+pydantic
+sqlalchemy
+psycopg2-binary
+alembic
+httpx
+
 uvicorn==0.24.0
 python-multipart==0.0.6
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
+httpx==0.27.0
 

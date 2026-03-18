@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type DragEvent } from "react";
 
-function FileUpload() {
+function FileUpload({ onSuccess }: { onSuccess?: () => void }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
@@ -59,6 +59,7 @@ function FileUpload() {
         setMessage('File uploaded successfully!');
         setMessageType('success');
         setSelectedFile(null);
+        onSuccess?.();
       } else {
         setMessage(`Error: ${data.message || 'Upload failed'}`);
         setMessageType('error');

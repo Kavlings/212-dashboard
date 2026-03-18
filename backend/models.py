@@ -9,9 +9,12 @@ class Transaction(Base):
     #Created by us ie it doesnt come from the csv
     id = Column(Integer, primary_key= True, index=True) #postg will index for faster lookup
     created_at = Column(DateTime, server_default=func.now())
+    t212_id = Column(String, unique=True, nullable=True, index=True)
+
 
     # Identity
     kind = Column(String, nullable=False)
+    account_type = Column(String)  # invest | stocks-isa | cfd | cash-isa
     action = Column(String)
     time = Column(String)
     isin = Column(String)

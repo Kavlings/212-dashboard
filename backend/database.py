@@ -3,8 +3,7 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 
 DATABASE_URL = "postgresql://localhost/dashboard212"
-engine = create_engine(DATABASE_URL
-)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 

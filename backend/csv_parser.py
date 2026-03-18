@@ -16,11 +16,13 @@ def classify_kind(action: str) -> str:
         return "unknown"
 
 def parse_decimal(value: str) -> Optional[float]:
-    """ Parse decimal string to float, return None if empty/invalid.  """
+    """ Parse decimal string to float, return None if empty/invalid. Handles commas or spaces. """
     if not value or value.strip() == "":
         return None
     try:
-        return float(Decimal(value))
+        # Remove commas or spaces used as thousands separators
+        clean_val = value.replace(",", "").replace(" ", "").strip()
+        return float(Decimal(clean_val))
     except (InvalidOperation, ValueError):
         return None
 
@@ -67,6 +69,9 @@ def validate_transaction(row: Dict[str,str], kind: str) -> List[str]:
 
 def parse_row(row: Dict[str, str], row_num: int) -> Dict[str, Any]:
     """Parse a single CSV row into a normalized transaction"""
+    # Strip whitespace from all values in the row first
+    row = {k.strip(): v.strip() for k, v in row.items() if k is not None}
+    
     action = row.get("Action","")
     kind = classify_kind(action)
 
